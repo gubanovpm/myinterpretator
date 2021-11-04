@@ -163,13 +163,13 @@ myCPU::RegisterValue_t myCPU::instruction_t::getIMM() const {
 }
 
 void myCPU::executeSUB  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
-	int rs1 = hart->getRegister(instruction.getRS1_ID());
-	int rs2 = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs1 = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs2 = hart->getRegister(instruction.getRS1_ID());
 	auto rd_id = instruction.getRD_ID();
 	hart->setRegister(rd_id, rs1 - rs2);
 }
 void myCPU::executeSRA  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
-	int  rs1 = hart->getRegister(instruction.getRS1_ID());
+	int32_t  rs1 = hart->getRegister(instruction.getRS1_ID());
 	auto rs2 = hart->getRegister(instruction.getRS1_ID());
 	auto rd_id = instruction.getRD_ID();
 	if (rd_id != 0) hart->setRegister(rd_id, rs1 >> rs2);
@@ -187,8 +187,8 @@ void myCPU::executeSLL  (myCPU::hart_t *hart, const myCPU::instruction_t &instru
 	if (rd_id != 0) hart->setRegister(rd_id, rs1 << rs2);
 }
 void myCPU::executeSLT  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
-	int rs1 = hart->getRegister(instruction.getRS1_ID());
-	int rs2 = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs1 = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs2 = hart->getRegister(instruction.getRS1_ID());
 	auto rd_id = instruction.getRD_ID();
 	if (rd_id != 0) hart->setRegister(rd_id, (rs1 < rs2) ? 1 : 0);
 }
@@ -236,8 +236,8 @@ void myCPU::executeSLLI  (myCPU::hart_t *hart, const myCPU::instruction_t &instr
 	if (rd_id != 0) hart->setRegister(rd_id, rs1 << imm);
 }
 void myCPU::executeSLTI  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
-	int imm   = instruction.getIMM();
-	int rs1   = hart->getRegister(instruction.getRS1_ID());
+	int32_t imm   = instruction.getIMM();
+	int32_t rs1   = hart->getRegister(instruction.getRS1_ID());
 	auto rd_id = instruction.getRD_ID();
 	if (rd_id != 0) hart->setRegister(rd_id, (rs1 < imm) ? 1 : 0);
 }
@@ -255,7 +255,7 @@ void myCPU::executeXORI  (myCPU::hart_t *hart, const myCPU::instruction_t &instr
 }
 void myCPU::executeSRAI  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
 	auto imm   = instruction.getIMM() & 0b11111;
-	int rs1   = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs1   = hart->getRegister(instruction.getRS1_ID());
 	auto rd_id = instruction.getRD_ID();
 	if (rd_id != 0) hart->setRegister(rd_id, rs1 >> imm);
 }
@@ -348,14 +348,14 @@ void myCPU::executeBNE  (myCPU::hart_t *hart, const myCPU::instruction_t &instru
 	if (rs1 != rs2) hart->setNextPC(imm);
 }
 void myCPU::executeBLT  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
-	int rs1  = hart->getRegister(instruction.getRS1_ID());
-	int rs2  = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs1  = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs2  = hart->getRegister(instruction.getRS1_ID());
 	auto imm = instruction.getIMM();
 	if (rs1 < rs2) hart->setNextPC(imm);
 }
 void myCPU::executeBGE  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
-	int rs1  = hart->getRegister(instruction.getRS1_ID());
-	int rs2  = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs1  = hart->getRegister(instruction.getRS1_ID());
+	int32_t rs2  = hart->getRegister(instruction.getRS1_ID());
 	auto imm = instruction.getIMM();
 	if (rs1 >= rs2) hart->setNextPC(imm);
 }

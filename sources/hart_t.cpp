@@ -23,7 +23,7 @@ myCPU::op_memory_t* myCPU::hart_t::getOpMemory()  {
 }
 void myCPU::hart_t::printAllReg  () const {
 	std::cout << "All registers: " << std::endl;
-	for (int i = 0; i < register_count_; ++i)
+	for (size_t i = 0; i < register_count_; ++i)
 		std::cout << "reg[" << i << "] = " << registers_[i] << " ;" << std::endl ;
 	std::cout << "PC value = " << register_pc_ << " ; next PC value = " << next_pc_ << std::endl;
 }
@@ -39,4 +39,5 @@ void myCPU::hart_t::setNextPC (myCPU::RegisterValue_t value) {
 }
 
 bool myCPU::hart_t::execute() {
+	return true;
 }
