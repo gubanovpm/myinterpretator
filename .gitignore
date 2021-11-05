@@ -5,3 +5,4 @@ Makefile
 .git
 interpretator
 cmake_install.cmake
+hidden

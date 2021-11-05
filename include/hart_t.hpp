@@ -20,14 +20,15 @@ public:
 	void            setPCRegister(RegisterValue_t value);
 	void            setNextPC    (RegisterValue_t value);
 
+	void load(std::string file_name);
 	bool execute();
 private:
 	static const size_t register_count_ = 32;
 
 	RegisterValue_t registers_[register_count_] = {};
 	RegisterValue_t register_pc_ = 0;
-	RegisterValue_t next_pc_;
-	op_memory_t *op_memory_;
+	RegisterValue_t next_pc_ = 0;
+	op_memory_t *op_memory_ ;
 };
 
 }

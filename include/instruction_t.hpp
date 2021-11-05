@@ -4,7 +4,9 @@
 
 #include <iostream>
 
-namespace myCPU {
+enum instr_frmt_t { OP   = 0b0110011, OP_IMM = 0b0010011, LOAD = 0b0000011,
+                    SAVE = 0b0100011, BRANCH = 0b1100011, JAL  = 0b1101111, 
+					JALR = 0b1100111, AUIPC  = 0b0010111, LUI  = 0b0110111 };
 
 enum op_imm_kind_t : uint8_t { ADDI = 0, SLLI, SLTI, SLTIU, XORI, SR_I, ORI, ANDI };
 enum load_kind_t   : uint8_t { LB   = 0, LH  , LW   , LBU , LHU } ;
@@ -12,36 +14,37 @@ enum save_kind_t   : uint8_t { SB   = 0, SH  , SW };
 enum branch_kind_t : uint8_t { BEQ  = 0, BNE , BLT  , BGE , BLTU, BGEU }; 
 enum op_kind_t     : uint8_t { A_S  = 0, SLL , SLT  , SLTU, XOR , SR_  , OR, AND  };
 
-enum instr_frmt_t { OP   = 0b0110011, OP_IMM = 0b0010011, LOAD = 0b0000011,
-                    SAVE = 0b0100011, BRANCH = 0b1100011, JAL  = 0b1101111, 
-					JALR = 0b1100111, AUIPC  = 0b0010111, LUI  = 0b0110111 };
+namespace myCPU {
 
-using instruction_type_t = struct {
-	instr_frmt_t frmt_;
-	union {
-		op_imm_kind_t op_imm;
-		load_kind_t   load;
-		save_kind_t   save;
-		branch_kind_t branch;
-		op_kind_t     op;
-	} u;
-};
+//using instruction_type_t = struct {
+//	instr_frmt_t frmt_;
+//	union {
+//		op_imm_kind_t op_imm;
+//		load_kind_t   load;
+//		save_kind_t   save;
+//		branch_kind_t branch;
+//		op_kind_t     op;
+//	} u;
+//};
 
 class instruction_t {
 public:
 	static const size_t instruction_size_ = 4;
+	instruction_t() = default;
 	instruction_t(EncodedInstr_t encodedInstr, RegisterValue_t pc);
 
 	size_t getRD_ID () const;
 	size_t getRS1_ID() const;
 	size_t getRS2_ID() const;
 	RegisterValue_t getIMM () const;
+	void (*executor_)(hart_t *, const instruction_t &);
 
 private:
-	void (*executor_)(hart_t *, const instruction_t &);
 	size_t rd_ID_, rs1_ID_, rs2_ID_;
 	RegisterValue_t imm_ = 0;
 };
+
+void print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &encodedInstr);
 
 void executeSUB  (hart_t *hart, const instruction_t &instruction);
 void executeSRA  (hart_t *hart, const instruction_t &instruction);

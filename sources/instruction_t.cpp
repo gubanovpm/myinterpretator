@@ -396,3 +396,147 @@ void myCPU::executeLUI   (myCPU::hart_t *hart, const myCPU::instruction_t &instr
 	auto imm   = instruction.getIMM();
 	hart->setRegister(rd_id, imm);
 }
+
+void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &encodedInstr) {
+	unsigned frmt_ = getBits(0, 6, encodedInstr);
+	size_t rd_ID_, rs1_ID_, rs2_ID_, imm_;
+	switch (frmt_) {
+		case OP: {
+			unsigned funct3_ = getBits(12, 14, encodedInstr);
+			unsigned funct7_ = getBits(25, 31, encodedInstr);
+			rd_ID_  = getBits( 7, 11, encodedInstr);
+			rs1_ID_ = getBits(15, 19, encodedInstr);
+			rs2_ID_ = getBits(20, 24, encodedInstr);
+
+			if (funct7_ == 0b0100000)
+				if     (funct3_ == A_S) stream << "SUB " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_;
+				else if(funct3_ == SR_) stream << "SRA " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_;
+				else {std::cout << "unknown operation" << std::endl; abort(); }
+
+			else if (funct7_ == 0b0000000)
+				switch(funct3_) {
+					
+					case A_S : stream << "ADD " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
+					case SLL : stream << "SLL " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
+					case SLT : stream << "SLT " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
+					case SLTU: stream << "SLTU " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_ ; break;
+					case XOR : stream << "XOR " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
+					case SR_ : stream << "SRL " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
+					case OR  : stream << "OR " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
+					case AND : stream << "AND " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ;; break;
+				}
+			else {std::cout << "unknown operation" << std::endl; abort(); }
+
+			break;
+		}
+		case OP_IMM: {
+			imm_    = getBits(20, 31, encodedInstr);
+			rs1_ID_ = getBits(15, 19, encodedInstr);
+			rd_ID_  = getBits( 7, 11, encodedInstr);
+			unsigned funct3_ = getBits(12, 14, encodedInstr);
+			unsigned funct7_ = getBits(25, 31, encodedInstr);
+
+			switch(funct3_) {
+				case ADDI : stream << "ADDI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case SLLI : stream << "SLLI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case SLTI : stream << "SLTI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case SLTIU: stream << "SLTIU " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case XORI : stream << "XORI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case SR_I : { 
+					if        (funct7_ == 0b0100000) stream << "SRAI " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ;
+					else if   (funct7_ == 0b0000000) stream << "SRLI " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ;
+					     else {std::cout << "unknown operation" << std::endl; abort(); }
+					break; }
+				case ORI  : stream << "ORI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case ANDI : stream << "ANDI " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				
+				default: {std::cout << "unknown operation" << std::endl; abort(); }
+			}
+
+			break;
+		}
+		case LOAD: {
+			imm_    = getBits(20, 31, encodedInstr);
+			rs1_ID_ = getBits(15, 19, encodedInstr);
+			rd_ID_  = getBits( 7, 11, encodedInstr);
+			unsigned funct3_ = getBits(12, 14, encodedInstr);
+
+			switch (funct3_) {
+				case LB  : stream << "LB "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case LH  : stream << "LH "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case LW  : stream << "LW "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case LBU : stream << "LBU " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case LHU : stream << "LHU " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+
+				default: {std::cout << "unknown operation" << std::endl; abort(); }
+			}
+
+			break;
+		}
+		case SAVE: {
+			imm_    = (getBits(25, 31, encodedInstr) << 4) | (getBits( 7, 11, encodedInstr));
+			rs1_ID_ = getBits(15, 19, encodedInstr);
+			rs2_ID_ = getBits(20, 24, encodedInstr);
+			unsigned funct3_ = getBits(12, 14, encodedInstr);
+
+			switch (funct3_) {
+				case SB : stream << "SB " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_  ; break;
+				case SH : stream << "SH " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_  ; break;
+				case SW : stream << "SW " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_  ; break;
+
+				default: {std::cout << "unknown operation" << std::endl; abort(); }
+			}
+
+			break;
+		}
+		case BRANCH: {
+			imm_    = (getBits(31, 31, encodedInstr) << 11) | (getBits( 7,  7, encodedInstr) << 10) | 
+			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr)) ;
+			rs1_ID_ = getBits(15, 19, encodedInstr);
+			rs2_ID_ = getBits(20, 24, encodedInstr);
+			unsigned funct3_ = getBits(12, 14, encodedInstr);
+
+			switch (funct3_) {
+				case BEQ : stream << "BEQ " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+				case BNE : stream << "BNE " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+				case BLT : stream << "BLT " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+				case BGE : stream << "BGE " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+				case BLTU: stream << "BLTU " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+				case BGEU: stream << "BGEU " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+
+				default: {std::cout << "unknown operation" << std::endl; abort(); }
+			}
+			break;
+		}
+		case JAL: {
+			rd_ID_ = getBits( 7, 11, encodedInstr);
+			imm_   = (getBits(31, 31, encodedInstr) << 19) | (getBits(12, 19, encodedInstr) << 11) |
+			         (getBits(20, 20, encodedInstr) << 10) | (getBits(21, 30, encodedInstr) << 1 ) ;
+			stream << "JAL " << rd_ID_ << ", " << imm_ << " + pc" ;
+
+			break;
+		}
+		case JALR: {
+			imm_    = getBits(20, 31, encodedInstr);
+			rs1_ID_ = getBits(15, 19, encodedInstr);
+			rd_ID_  = getBits( 7, 11, encodedInstr);
+			stream << "JALR " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_ << " + pc" ;
+			break;
+		}
+		case AUIPC: {
+			imm_   = getBits(12, 31, encodedInstr);
+			rd_ID_ = getBits( 7, 11, encodedInstr);
+			stream << "AUIPC " << rd_ID_ << ", " << imm_ << " + pc" ;
+
+			break;
+		}
+		case LUI: {
+			imm_   = getBits(12, 31, encodedInstr);
+			rd_ID_ = getBits( 7, 11, encodedInstr);
+			stream << "LUI " << rd_ID_ << ", " << imm_ << " + pc" ;
+
+			break;
+		}
+		default: { std::cout << "unknow format" << std::endl; abort(); }
+	}
+}
