@@ -8,7 +8,7 @@ $ cmake .
 $ make
 ```
 
-### After all, you can <b> run </b> executable file (when <file_name_NUMBER> - name of load file with hex format instruction):
+### After all, you can <b> run </b> executable file (where <file_name_NUMBER> - name of load file with hex format instruction):
 ```
 $ ./interpretator <file_name_1> <file_name_2> ...
 ``` 
