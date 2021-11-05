@@ -92,12 +92,11 @@ myCPU::instruction_t::instruction_t(myCPU::EncodedInstr_t encodedInstr, myCPU::R
 			break;
 		}
 		case BRANCH: {
-			imm_    = (getBits(31, 31, encodedInstr) << 11) | (getBits( 7,  7, encodedInstr) << 10) | 
-			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
-			if ((imm_ & (1 << 11)) != 0) {
-				imm_ -= 1; imm_ = ~imm_; imm_ = pc - imm_;
-			}
-			else imm_ += pc;
+			imm_    = (getBits(31, 31, encodedInstr) << 12) | (getBits( 7,  7, encodedInstr) << 11) | 
+			          (getBits(25, 30, encodedInstr) << 5 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
+			if ((imm_ & (1 << 12)) != 0) imm_ |= 0xfffff000;
+			//sprintf("%d + %d\n", imm_, pc);
+			imm_ = pc + (int)(imm_);
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rs2_ID_ = getBits(20, 24, encodedInstr);
 			unsigned funct3_ = getBits(12, 14, encodedInstr);
@@ -116,9 +115,10 @@ myCPU::instruction_t::instruction_t(myCPU::EncodedInstr_t encodedInstr, myCPU::R
 		}
 		case JAL: {
 			rd_ID_ = getBits( 7, 11, encodedInstr);
-			imm_   = (getBits(31, 31, encodedInstr) << 19) | (getBits(12, 19, encodedInstr) << 11) |
-			         (getBits(20, 20, encodedInstr) << 10) | (getBits(21, 30, encodedInstr) << 1 ) ;
-			imm_ += pc;
+			imm_   = (getBits(31, 31, encodedInstr) << 20) | (getBits(12, 19, encodedInstr) << 12) |
+			         (getBits(20, 20, encodedInstr) << 11) | (getBits(21, 30, encodedInstr) << 1 ) ;
+			if ((imm_ & (1 << 20)) != 0) imm_ |= 0xfff00000;
+			imm_ = pc + int(imm_);
 			executor_ = myCPU::executeJAL ;
 
 			break;
@@ -127,7 +127,6 @@ myCPU::instruction_t::instruction_t(myCPU::EncodedInstr_t encodedInstr, myCPU::R
 			imm_    = getBits(20, 31, encodedInstr);
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rd_ID_  = getBits( 7, 11, encodedInstr);
-			//imm_ += pc;
 			executor_ = myCPU::executeJALR ; 
 
 			break;
@@ -354,6 +353,7 @@ void myCPU::executeBLT  (myCPU::hart_t *hart, const myCPU::instruction_t &instru
 	int32_t rs1  = hart->getRegister(instruction.getRS1_ID());
 	int32_t rs2  = hart->getRegister(instruction.getRS1_ID());
 	auto imm = instruction.getIMM();
+	//printf("!!!%x\n", imm);
 	if (rs1 < rs2) hart->setNextPC(imm);
 }
 void myCPU::executeBGE  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
@@ -384,9 +384,10 @@ void myCPU::executeJAL   (myCPU::hart_t *hart, const myCPU::instruction_t &instr
 void myCPU::executeJALR  (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
 	auto rd_id = instruction.getRD_ID();
 	auto imm   = instruction.getIMM();
+	if ((imm & (1 << 12)) != 0) imm |= 0xfffff000;
 	auto rs1   = hart->getRegister(instruction.getRS1_ID());
 	if (rd_id != 0) hart->setRegister(rd_id, hart->getPCRegister() + instruction.instruction_size_);
-	hart->setNextPC(imm + rs1);
+	hart->setNextPC((int)imm + rs1);
 }
 void myCPU::executeAUIPC (myCPU::hart_t *hart, const myCPU::instruction_t &instruction) {
 	auto rd_id = instruction.getRD_ID();
@@ -494,19 +495,22 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			break;
 		}
 		case BRANCH: {
-			imm_    = (getBits(31, 31, encodedInstr) << 11) | (getBits( 7,  7, encodedInstr) << 10) | 
-			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
+			imm_    = (getBits(31, 31, encodedInstr) << 12) | (getBits( 7,  7, encodedInstr) << 11) | 
+			          (getBits(25, 30, encodedInstr) << 5 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
+			if ((imm_ & (1 << 11)) != 0) {
+				imm_ |= 0xfffff000;
+			}
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rs2_ID_ = getBits(20, 24, encodedInstr);
 			unsigned funct3_ = getBits(12, 14, encodedInstr);
 
 			switch (funct3_) {
-				case BEQ : stream << "BEQ " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
-				case BNE : stream << "BNE " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
-				case BLT : stream << "BLT " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
-				case BGE : stream << "BGE " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
-				case BLTU: stream << "BLTU " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
-				case BGEU: stream << "BGEU " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
+				case BEQ : stream << "BEQ " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << (int)imm_ << " + pc" ; break;
+				case BNE : stream << "BNE " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << (int)imm_ << " + pc" ; break;
+				case BLT : stream << "BLT " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << (int)imm_ << " + pc" ; break;
+				case BGE : stream << "BGE " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << (int)imm_ << " + pc" ; break;
+				case BLTU: stream << "BLTU " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << (int)imm_ << " + pc" ; break;
+				case BGEU: stream << "BGEU " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << (int)imm_ << " + pc" ; break;
 
 				default: {std::cout << "unknown operation" << std::endl; abort(); }
 			}
