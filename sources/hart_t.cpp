@@ -84,10 +84,11 @@ void myCPU::hart_t::load(std::string file_name) {
 	if(!fread(text, sizeof(char), sz, loaded_file)) abort();
 	fclose(loaded_file);
 
+	std::cout << "sz = " << sz << std::endl;
 
-	for (size_t i = 0; i < sz / 5; ++i) {
-		if (!op_memory_->write(register_pc_, 4, *(uint32_t *)(text + i * 5))) return;
-		printf("%x\n", *(uint32_t *)(text + i * 5));
+	for (size_t i = 0; i < sz / 4; ++i) {
+		if (!op_memory_->write(register_pc_, 4, *(uint32_t *)(text + i * 4))) return;
+		//printf("%x\n", *(uint32_t *)(text + i * 4));
 		register_pc_ += 4;
 	}
 
