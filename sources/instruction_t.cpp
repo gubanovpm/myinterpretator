@@ -93,7 +93,7 @@ myCPU::instruction_t::instruction_t(myCPU::EncodedInstr_t encodedInstr, myCPU::R
 		}
 		case BRANCH: {
 			imm_    = (getBits(31, 31, encodedInstr) << 11) | (getBits( 7,  7, encodedInstr) << 10) | 
-			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr)) ;
+			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
 			imm_ += pc;
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rs2_ID_ = getBits(20, 24, encodedInstr);
@@ -399,6 +399,7 @@ void myCPU::executeLUI   (myCPU::hart_t *hart, const myCPU::instruction_t &instr
 
 void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &encodedInstr) {
 	unsigned frmt_ = getBits(0, 6, encodedInstr);
+	//printf("frmt cmnd = %x", encodedInstr);
 	size_t rd_ID_, rs1_ID_, rs2_ID_, imm_;
 	switch (frmt_) {
 		case OP: {
@@ -491,7 +492,7 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 		}
 		case BRANCH: {
 			imm_    = (getBits(31, 31, encodedInstr) << 11) | (getBits( 7,  7, encodedInstr) << 10) | 
-			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr)) ;
+			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rs2_ID_ = getBits(20, 24, encodedInstr);
 			unsigned funct3_ = getBits(12, 14, encodedInstr);

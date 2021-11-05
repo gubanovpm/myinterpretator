@@ -49,7 +49,7 @@ bool myCPU::hart_t::execute() {
 		if (!op_memory_->read(register_pc_, t.instruction_size_, encdoedInstr)) return false;
 		else if (encdoedInstr == 0xffffffff) { register_pc_ = startPC; return true; }
 		
-		std::cout << "current instruction: " ; print_encInstr(std::cout, encdoedInstr); std::cout << std::endl;
+		std::cout << register_pc_ << ": " ; print_encInstr(std::cout, encdoedInstr); std::cout << std::endl;
 		myCPU::instruction_t instr(encdoedInstr, register_pc_);
 		char c;
 		bool isNextInstr = false;
