@@ -124,7 +124,7 @@ myCPU::instruction_t::instruction_t(myCPU::EncodedInstr_t encodedInstr, myCPU::R
 			imm_    = getBits(20, 31, encodedInstr);
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rd_ID_  = getBits( 7, 11, encodedInstr);
-			imm_ += pc;
+			//imm_ += pc;
 			executor_ = myCPU::executeJALR ; 
 
 			break;
@@ -521,7 +521,7 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			imm_    = getBits(20, 31, encodedInstr);
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rd_ID_  = getBits( 7, 11, encodedInstr);
-			stream << "JALR " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_ << " + pc" ;
+			stream << "JALR " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_ ;//<< " + pc" ;
 			break;
 		}
 		case AUIPC: {
