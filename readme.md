@@ -12,6 +12,10 @@ $ make
 ```
 $ ./interpretator <file_name_1> <file_name_2> ...
 ``` 
+###For example:
+```
+$ ./interpretator ./tests/frmt/test3 ./tests/frmt/test2 ./tests/frmt/test2.bin
+```
 
 ### When you load files you start step-by-step execution each of them. To controll execution you have some commands: 
 ```
