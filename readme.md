@@ -2,7 +2,7 @@
 
 ###### I apologize in advance for my poor English :(
 
-## Or you can build Makefile by yourself:
+## You can build Makefile by yourself:
 ```
 $ cmake .
 $ make
