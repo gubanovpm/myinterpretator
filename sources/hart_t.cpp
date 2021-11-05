@@ -56,10 +56,11 @@ bool myCPU::hart_t::execute() {
 		while (!isNextInstr) {
 			c = getc(stdin);
 			switch (c) {
-				case 'r': printAllReg(); break;
-				case 'n': isNextInstr = true; break;
-				case 'p': size_t num; std::cin >> num ; std::cout << getRegister(num) << std::endl; break;
-				case '\n': break;
+				case 'r'  : printAllReg(); break;
+				case 'n'  : isNextInstr = true; break;
+				case 'p'  : size_t num; std::cin >> num ; std::cout << getRegister(num) << std::endl; break;
+				case '\n' : break;
+				case 'q'  : return false; break;
 				default : std::cout << "unknown op, please try again\n" ;  
 			}
 		}

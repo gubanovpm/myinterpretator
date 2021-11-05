@@ -18,4 +18,5 @@ $ ./interpretator <file_name_1> <file_name_2> ...
 n                // move to the next step
 p <register_num> // print value of register_num
 r                // print all values of registers
+q                // interrupt execution
 ```
