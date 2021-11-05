@@ -10,3 +10,7 @@ uint32_t getBits(size_t from, size_t to, uint32_t value) {
 		result |= ((value >> (itb + from)) & 1) << itb ;
 	return result;
 }
+
+std::string myCPU::reg_name(int num) {
+	return std::string("x") + std::to_string(num);
+}

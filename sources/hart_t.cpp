@@ -1,3 +1,4 @@
+#include "../include/common.hpp"
 #include "../include/hart_t.hpp"
 #include "../include/instruction_t.hpp"
 #include <fstream>
@@ -25,7 +26,7 @@ myCPU::op_memory_t* myCPU::hart_t::getOpMemory()  {
 }
 void myCPU::hart_t::printAllReg  () const {
 	for (size_t i = 1; i <= register_count_; ++i) {
-		std::cout << "reg[" << i - 1 << "] = " << registers_[i - 1] << " ; " ;
+		std::cout << myCPU::reg_name(i - 1) << " = " << registers_[i - 1] << " ; " ;
 		if ((i % 6 == 0 && i != 0) || i == register_count_ ) std::cout << std::endl;
 	}
 	std::cout << "PC value = " << register_pc_ << " ; next PC value = " << next_pc_ << std::endl;
@@ -84,7 +85,7 @@ void myCPU::hart_t::load(std::string file_name) {
 	if(!fread(text, sizeof(char), sz, loaded_file)) abort();
 	fclose(loaded_file);
 
-	std::cout << "sz = " << sz << std::endl;
+	//std::cout << "sz = " << sz << std::endl;
 
 	for (size_t i = 0; i < sz / 4; ++i) {
 		if (!op_memory_->write(register_pc_, 4, *(uint32_t *)(text + i * 4))) return;

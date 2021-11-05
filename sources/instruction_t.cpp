@@ -94,7 +94,10 @@ myCPU::instruction_t::instruction_t(myCPU::EncodedInstr_t encodedInstr, myCPU::R
 		case BRANCH: {
 			imm_    = (getBits(31, 31, encodedInstr) << 11) | (getBits( 7,  7, encodedInstr) << 10) | 
 			          (getBits(25, 30, encodedInstr) << 4 ) | (getBits( 8, 11, encodedInstr) << 1 ) ;
-			imm_ += pc;
+			if ((imm_ & (1 << 11)) != 0) {
+				imm_ -= 1; imm_ = ~imm_; imm_ = pc - imm_;
+			}
+			else imm_ += pc;
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rs2_ID_ = getBits(20, 24, encodedInstr);
 			unsigned funct3_ = getBits(12, 14, encodedInstr);
@@ -410,21 +413,21 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			rs2_ID_ = getBits(20, 24, encodedInstr);
 
 			if (funct7_ == 0b0100000)
-				if     (funct3_ == A_S) stream << "SUB " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_;
-				else if(funct3_ == SR_) stream << "SRA " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_;
+				if     (funct3_ == A_S) stream << "SUB " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_);
+				else if(funct3_ == SR_) stream << "SRA " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_);
 				else {std::cout << "unknown operation" << std::endl; abort(); }
 
 			else if (funct7_ == 0b0000000)
 				switch(funct3_) {
 					
-					case A_S : stream << "ADD " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
-					case SLL : stream << "SLL " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
-					case SLT : stream << "SLT " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
-					case SLTU: stream << "SLTU " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_ ; break;
-					case XOR : stream << "XOR " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
-					case SR_ : stream << "SRL " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
-					case OR  : stream << "OR " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ; break;
-					case AND : stream << "AND " << rd_ID_ << ", " << rs1_ID_ << ", " << rs2_ID_  ;; break;
+					case A_S : stream << "ADD " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case SLL : stream << "SLL " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case SLT : stream << "SLT " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case SLTU: stream << "SLTU "<< myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case XOR : stream << "XOR " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case SR_ : stream << "SRL " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case OR  : stream << "OR "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
+					case AND : stream << "AND " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_); break;
 				}
 			else {std::cout << "unknown operation" << std::endl; abort(); }
 
@@ -438,18 +441,18 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			unsigned funct7_ = getBits(25, 31, encodedInstr);
 
 			switch(funct3_) {
-				case ADDI : stream << "ADDI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case SLLI : stream << "SLLI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case SLTI : stream << "SLTI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case SLTIU: stream << "SLTIU " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case XORI : stream << "XORI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case ADDI : stream << "ADDI "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case SLLI : stream << "SLLI "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case SLTI : stream << "SLTI "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case SLTIU: stream << "SLTIU " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case XORI : stream << "XORI "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
 				case SR_I : { 
-					if        (funct7_ == 0b0100000) stream << "SRAI " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ;
-					else if   (funct7_ == 0b0000000) stream << "SRLI " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ;
+					if        (funct7_ == 0b0100000) stream << "SRAI " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ;
+					else if   (funct7_ == 0b0000000) stream << "SRLI " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ;
 					     else {std::cout << "unknown operation" << std::endl; abort(); }
 					break; }
-				case ORI  : stream << "ORI "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case ANDI : stream << "ANDI " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case ORI  : stream << "ORI "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case ANDI : stream << "ANDI " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
 				
 				default: {std::cout << "unknown operation" << std::endl; abort(); }
 			}
@@ -463,11 +466,11 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			unsigned funct3_ = getBits(12, 14, encodedInstr);
 
 			switch (funct3_) {
-				case LB  : stream << "LB "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case LH  : stream << "LH "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case LW  : stream << "LW "  << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case LBU : stream << "LBU " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
-				case LHU : stream << "LHU " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_  ; break;
+				case LB  : stream << "LB "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case LH  : stream << "LH "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case LW  : stream << "LW "  << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case LBU : stream << "LBU " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
+				case LHU : stream << "LHU " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_  ; break;
 
 				default: {std::cout << "unknown operation" << std::endl; abort(); }
 			}
@@ -481,9 +484,9 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			unsigned funct3_ = getBits(12, 14, encodedInstr);
 
 			switch (funct3_) {
-				case SB : stream << "SB " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_  ; break;
-				case SH : stream << "SH " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_  ; break;
-				case SW : stream << "SW " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_  ; break;
+				case SB : stream << "SB " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_  ; break;
+				case SH : stream << "SH " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_  ; break;
+				case SW : stream << "SW " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_  ; break;
 
 				default: {std::cout << "unknown operation" << std::endl; abort(); }
 			}
@@ -498,12 +501,12 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			unsigned funct3_ = getBits(12, 14, encodedInstr);
 
 			switch (funct3_) {
-				case BEQ : stream << "BEQ " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
-				case BNE : stream << "BNE " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
-				case BLT : stream << "BLT " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
-				case BGE : stream << "BGE " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
-				case BLTU: stream << "BLTU " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
-				case BGEU: stream << "BGEU " << rs1_ID_ << ", " << rs2_ID_ << ", " << imm_ << " + pc" ; break;
+				case BEQ : stream << "BEQ " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
+				case BNE : stream << "BNE " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
+				case BLT : stream << "BLT " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
+				case BGE : stream << "BGE " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
+				case BLTU: stream << "BLTU " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
+				case BGEU: stream << "BGEU " << myCPU::reg_name(rs1_ID_) << ", " << myCPU::reg_name(rs2_ID_) << ", " << imm_ << " + pc" ; break;
 
 				default: {std::cout << "unknown operation" << std::endl; abort(); }
 			}
@@ -513,7 +516,7 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			rd_ID_ = getBits( 7, 11, encodedInstr);
 			imm_   = (getBits(31, 31, encodedInstr) << 19) | (getBits(12, 19, encodedInstr) << 11) |
 			         (getBits(20, 20, encodedInstr) << 10) | (getBits(21, 30, encodedInstr) << 1 ) ;
-			stream << "JAL " << rd_ID_ << ", " << imm_ << " + pc" ;
+			stream << "JAL " << myCPU::reg_name(rd_ID_) << ", " << imm_ << " + pc" ;
 
 			break;
 		}
@@ -521,20 +524,20 @@ void myCPU::print_encInstr(std::ostream &stream, const myCPU::EncodedInstr_t &en
 			imm_    = getBits(20, 31, encodedInstr);
 			rs1_ID_ = getBits(15, 19, encodedInstr);
 			rd_ID_  = getBits( 7, 11, encodedInstr);
-			stream << "JALR " << rd_ID_ << ", " << rs1_ID_ << ", " << imm_ ;//<< " + pc" ;
+			stream << "JALR " << myCPU::reg_name(rd_ID_) << ", " << myCPU::reg_name(rs1_ID_) << ", " << imm_ ;//<< " + pc" ;
 			break;
 		}
 		case AUIPC: {
 			imm_   = getBits(12, 31, encodedInstr);
 			rd_ID_ = getBits( 7, 11, encodedInstr);
-			stream << "AUIPC " << rd_ID_ << ", " << imm_ << " + pc" ;
+			stream << "AUIPC " << myCPU::reg_name(rd_ID_) << ", " << imm_ << " + pc" ;
 
 			break;
 		}
 		case LUI: {
 			imm_   = getBits(12, 31, encodedInstr);
 			rd_ID_ = getBits( 7, 11, encodedInstr);
-			stream << "LUI " << rd_ID_ << ", " << imm_ << " + pc" ;
+			stream << "LUI " << myCPU::reg_name(rd_ID_) << ", " << imm_ << " + pc" ;
 
 			break;
 		}
